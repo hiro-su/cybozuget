@@ -1,0 +1,146 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+# developed by h-sugimoto@iij.ad.jp
+
+require "yaml"
+require "uri"
+require "rexml/document" 
+require "optparse/time"
+require File.join(File.dirname(__FILE__), '..', 'lib', 'cybozuget')
+require File.join(File.dirname(__FILE__), '..', 'lib', 'cybozuget', 'version')
+
+args = OptionParser.new do |opt|
+  opt.on('-u', '--user (USER NAME|USER ID)')
+  opt.on('-s', '--start DATE', String)
+  opt.on('-e', '--end DATE', String)
+  opt.on('-d', '--day NUMBER', Integer)
+  opt.on('-w', '--week NUMBER', Integer)
+  opt.on('-U', '--url')
+  opt.on('-m', '--member')
+  opt.on('-i', '--info (USER NAME|all)')
+  opt.version = CybozuGet::VERSION
+end.getopts
+
+# configure
+config = YAML.load_file File.join(File.dirname(__FILE__), '..', 'config', 'config.yml')
+users_file = File.join(File.dirname(__FILE__), '..', 'config', config["cache"]["users"])
+auth_user = config["auth"]["user"]
+auth_pass = config["auth"]["pass"]
+user_name = args["user"].nil? ? auth_user : args["user"]
+
+uri = URI.parse(config["site"]["url"])
+url = uri.host
+port = uri.port
+path = uri.path
+
+wdays = %w[日 月 火 水 木 金 土]
+time_args = {
+  start_time: args["start"],
+  end_time: args["end"],
+  day: args["day"],
+  week: args["week"]
+}
+
+# user info
+unless args["info"].nil?
+  if args["info"] == "all" || args["info"] == ""
+    YAML.load_file(users_file).each do |u, value|
+      puts sprintf("%s:", u)
+      value.each do |key, v|
+        puts sprintf("  %s: %s", key ,v)
+      end
+    end
+  else
+    cache = YAML.load_file(users_file)[args["info"]]
+    unless cache.nil?
+      puts sprintf("%s:", args["info"])
+      cache.each do |key, v|
+        puts sprintf("  %s: %s", key, v)
+      end
+    else
+      puts "no cache user #{args["@info"]}"
+    end
+  end
+  exit
+end
+
+cybozu = CybozuGet::API.new(auth_user, auth_pass, path)
+
+if port == 80
+  require "net/http"
+  client = Net::HTTP.new(url, port)
+else
+  require "net/https"
+  client = Net::HTTP.new(url, port)
+  client.use_ssl = true
+end
+
+# users.yml file check
+if File.exists? users_file
+  users = YAML.load_file users_file
+else
+  open(users_file,"w") { |f| users = {} }
+end
+
+# member check
+if args["user"] =~ /\d+/
+  user_id = args["user"]
+else
+  if users.member?(user_name)
+    user_id = users[user_name]["user_id"]
+  else
+    args["user"] = cybozu.get_uid(client, user_name)
+    user_id = args["user"]["user_id"]
+    if user_id.nil?
+      puts "unknow user #{user_name}"
+      exit
+    end
+    # add yaml file
+    users[user_name] = args["user"]
+    open(users_file,"w") { |f| YAML.dump users, f }
+  end
+end
+
+stime,etime = cybozu.create_time(time_args)
+doc = cybozu.get_schedule(client, user_id, stime, etime)
+
+# view
+schedule_event_path =\
+  "soapEnvelope/soapBody/scheduleScheduleGetEventsByTargetResponse/returns/schedule_event" 
+separator_line = "+" + "-" *  10 + "+" + "-" * 50
+unless doc.elements[schedule_event_path].nil?
+  puts separator_line
+  doc.elements.each(schedule_event_path) do |elem|
+    puts "| イベント | #{elem.attributes["detail"]}(#{elem.attributes["event_type"]},#{elem.attributes["public_type"]})"
+    elem.elements["members"].each do |value|
+      if value.class == REXML::Element
+        puts "| 場所     | %s" % value.elements["facility"].attributes["name"] unless value.elements["facility"].nil?
+        puts "| 参加者   | %s(#{value.elements["user"].attributes["id"]})" % value.elements["user"].attributes["name"] unless value.elements["user"].nil? if args["member"]
+      end
+    end
+    if !elem.elements["when"].elements["datetime"].nil?
+      estime = Time.at(Time.parse(elem.elements["when"].elements["datetime"].attributes["start"]).getlocal)
+      puts "| 開始日時 | %s" % estime.strftime("%Y年%m月%d日(#{wdays[estime.wday]}) %H時%M分")
+      unless elem.elements["when"].elements["datetime"].attributes["end"].nil?
+        eetime = Time.at(Time.parse(elem.elements["when"].elements["datetime"].attributes["end"]).getlocal)
+        puts "| 終了日時 | %s" % eetime.strftime("%Y年%m月%d日(#{wdays[eetime.wday]}) %H時%M分")
+      end
+    elsif !elem.elements["when"].elements["date"].nil?
+      if elem.elements["when"].elements["date"].attributes["end"] != elem.elements["when"].elements["date"].attributes["start"]
+        estime = Time.at(Time.parse(elem.elements["when"].elements["date"].attributes["start"]).getlocal)
+        puts "| 開始日   | #{estime.strftime("%Y年%m月%d日(#{wdays[estime.wday]})")}"
+        eetime = Time.at(Time.parse(elem.elements["when"].elements["date"].attributes["start"]).getlocal)
+        puts "| 終了日   | #{eetime.strftime("%Y年%m月%d日(#{wdays[eetime.wday]})")}"
+      else
+        estime = Time.at(Time.parse(elem.elements["when"].elements["date"].attributes["start"]).getlocal)
+        puts "| 終日     | #{estime.strftime("%Y年%m月%d日(#{wdays[estime.wday]})")}"
+      end
+    end
+    eventid = elem.attributes["id"]
+    bdate = estime.strftime("%Y-%m-%d")
+    puts "| URL      | https://#{url}/cgi-bin/cbgrn/grn.cgi/schedule/view?event=#{eventid}&bdate=#{bdate}" if args["url"]
+    puts separator_line
+  end
+else
+  puts "no schedule"
+end

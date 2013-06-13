@@ -1,0 +1,7 @@
+auth:
+  user: sato
+  pass: sato
+site:
+  url: http://onlinedemo.cybozu.co.jp/scripts/garoon3/grn.exe
+cache:
+  users: users.yml
