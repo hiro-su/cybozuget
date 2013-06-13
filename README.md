@@ -1,4 +1,4 @@
-# Cybozuget
+# CybozuGet
 ## Setting
 
 1. config.ymlのユーザー情報とGaroonのアドレスを適切に設定
@@ -42,3 +42,12 @@
 ### cacheしたユーザー情報
     cybozuget -i all
     cybozuget -i tanaka
+
+## TODO
+* コマンドでconfig.ymlを変更
+* user.ymlのキャッシュクリア
+* 実行速度が遅い
+* 施設の空き状況が知りたい
+* 複数人のスケジュールを一度に検索したい
+* 全体的にリファクタリング
+* テストコードの追加
