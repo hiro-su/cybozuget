@@ -8,6 +8,10 @@
 1. cd bin
 2. ./cybozuget
 
+https使用時に以下の様なエラーが出る場合はconfigディレクトリに`http://curl.haxx.se/ca/cacert.pem`こちらのファイルを保存してください
+
+    SSL_connect returned=1 errno=0 state=SSLv3 read server certificate B: certificate verify failed (OpenSSL::SSL::SSLError)
+
 ## Command Install
 
 1. `edit config/config.yml`

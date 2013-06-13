@@ -73,6 +73,8 @@ else
   require "net/https"
   client = Net::HTTP.new(url, port)
   client.use_ssl = true
+  client.verify_mode = OpenSSL::SSL::VERIFY_PEER
+  client.ca_file = File.join(File.dirname(__FILE__), "../config/cacert.pem")
 end
 
 # users.yml file check
