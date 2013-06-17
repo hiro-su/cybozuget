@@ -112,7 +112,7 @@ separator_line = "+" + "-" *  10 + "+" + "-" * 50
 unless doc.elements[schedule_event_path].nil?
   puts separator_line
   doc.elements.each(schedule_event_path) do |elem|
-    puts "| イベント | #{elem.attributes["detail"]}(#{elem.attributes["event_type"]},#{elem.attributes["public_type"]})"
+    puts "| イベント | #{"#{elem.attributes["plan"]}:" if elem.attributes["plan"]}#{elem.attributes["detail"]}(#{elem.attributes["event_type"]},#{elem.attributes["public_type"]})"
     elem.elements["members"].each do |value|
       if value.class == REXML::Element
         puts "| 場所     | %s" % value.elements["facility"].attributes["name"] unless value.elements["facility"].nil?
