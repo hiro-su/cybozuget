@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
 # coding: utf-8
-# developed by h-sugimoto@iij.ad.jp
+# developed by h.sugipon@gmail.com
 
 require "yaml"
 require "uri"
 require "rexml/document" 
 require "optparse/time"
-require File.join(File.dirname(__FILE__), '..', 'lib', 'cybozuget')
+require File.join(File.dirname(__FILE__), '../lib', 'cybozuget')
 
 args = OptionParser.new do |opt|
   opt.on('-u', '--user (USER NAME|USER ID)')
