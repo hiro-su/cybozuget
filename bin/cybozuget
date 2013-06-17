@@ -7,7 +7,6 @@ require "uri"
 require "rexml/document" 
 require "optparse/time"
 require File.join(File.dirname(__FILE__), '..', 'lib', 'cybozuget')
-require File.join(File.dirname(__FILE__), '..', 'lib', 'cybozuget', 'version')
 
 args = OptionParser.new do |opt|
   opt.on('-u', '--user (USER NAME|USER ID)')
