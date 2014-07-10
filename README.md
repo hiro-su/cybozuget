@@ -16,7 +16,7 @@ https使用時に以下の様なエラーが出る場合はconfigディレクト
 
 1. `edit config/config.yml`
 2. `git add .`
-3. `git commit "edit config.yml"`
+3. `export CYBOZU_USR=$user; export CYBOZU_PASS=Base64.encode64('$pass'); export CYBOZU_URL=$url`
 4. `rake build`
 5. `gem install pkg/cybozuget-0.0.1.gem`
 
@@ -48,7 +48,6 @@ https使用時に以下の様なエラーが出る場合はconfigディレクト
     cybozuget -i tanaka
 
 ## TODO
-* コマンドでconfig.ymlを変更
 * user.ymlのキャッシュクリア
 * 実行速度が遅い
 * 施設の空き状況が知りたい
