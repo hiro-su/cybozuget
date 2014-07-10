@@ -5,14 +5,17 @@
 
 ## Quick Start
 
-1. アクセス情報の設定
+### 1. アクセス情報の設定
+
 ```
 export CYBOZU_USER=sato
 export CYBOZU_PASS=c2F0bw==\n # Base64.encode64('sato')
 export CYBOZU_URL=http://onlinedemo2.cybozu.co.jp/scripts/garoon3/grn.exe
 ```
-2. cd bin
-3. ./cybozuget
+
+### 2. cd bin
+
+### 3. ./cybozuget
 
 https使用時に以下の様なエラーが出る場合はconfigディレクトリに`http://curl.haxx.se/ca/cacert.pem`こちらのファイルを保存してください
 
