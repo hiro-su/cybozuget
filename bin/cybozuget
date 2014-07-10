@@ -80,7 +80,7 @@ end
 
 # users.yml file check
 if File.exists? users_file
-  users = YAML.load_file users_file
+  users = YAML.load_file(users_file) || {}
 else
   open(users_file,"w") { |f| users = {} }
 end
