@@ -1,7 +1,7 @@
 auth:
-  user: sato
-  pass: sato
+  user: <%= ENV['CYBOZU_USER'] %>
+  pass: <%= ENV['CYBOZU_PASS'] %>
 site:
-  url: http://onlinedemo.cybozu.co.jp/scripts/garoon3/grn.exe
+  url: <%= ENV['CYBOZU_URL'] %>
 cache:
   users: users.yml

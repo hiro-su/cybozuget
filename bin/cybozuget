@@ -6,6 +6,7 @@ require "yaml"
 require "uri"
 require "rexml/document" 
 require "optparse/time"
+require "erb"
 require File.join(File.dirname(__FILE__), '../lib', 'cybozuget')
 
 args = OptionParser.new do |opt|
@@ -21,7 +22,7 @@ args = OptionParser.new do |opt|
 end.getopts
 
 # configure
-config = YAML.load_file File.join(File.dirname(__FILE__), '..', 'config', 'config.yml')
+config = YAML::load(ERB.new(IO.read(File.join(File.dirname(__FILE__), '..', 'config', 'config.yml'))).result)
 users_file = File.join(File.dirname(__FILE__), '..', 'config', config["cache"]["users"])
 auth_user = config["auth"]["user"]
 auth_pass = config["auth"]["pass"]
